@@ -270,8 +270,8 @@ bool lilo_init(void)
 {
 	uint8_t *ROMBaseHost = &RomMem[TosAddress];
 
-	if (!ConfigureParams.System.bMMU || ConfigureParams.Memory.STRamSize_KB < 8*1024) {
-		Log_AlertDlg(LOG_FATAL, "Linux requires MMU and at least 8MB of RAM!");
+	if (ConfigureParams.Memory.STRamSize_KB < 2048) {
+		Log_AlertDlg(LOG_FATAL, "Linux requires at least 2 MiB of RAM!");
 		return false;
 	}
 	/* RESET + Linux/m68k boot */
@@ -709,6 +709,11 @@ static bool set_machine_type(void)
 	}
 
 	switch(ConfigureParams.System.nCpuLevel) {
+        case 0:
+                bi.cputype = be_swap32(BI_CPU_68020);
+                bi.mmutype = be_swap32(BI_MMU_68851);
+                // FIXME: in linux kernel and here, bootinfo needs to be extended
+                break;
 	case 3:
 		bi.cputype = be_swap32(BI_CPU_68030);
 		bi.mmutype = be_swap32(BI_MMU_68030);
