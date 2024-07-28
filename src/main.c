@@ -274,6 +274,7 @@ void Main_RequestQuit(int exitval)
 	{
 		/* Assure that CPU core shuts down */
 		M68000_SetSpecial(SPCFLAG_BRK);
+                gdb_destroy();
 	}
 	nQuitValue = exitval;
 }
@@ -285,6 +286,7 @@ void Main_SetQuitValue(int exitval)
 {
 	bQuitProgram = true;
 	M68000_SetSpecial(SPCFLAG_BRK);
+        gdb_destroy();
 	nQuitValue = exitval;
 }
 
@@ -1038,7 +1040,9 @@ int main(int argc, char *argv[])
 
 	/* Run emulation */
 	Main_UnPauseEmulation();
-        gdb_init();
+        if (bActivateGDB) {
+          gdb_init();
+        }
 	M68000_Start();                 /* Start emulation */
 
 	Control_RemoveFifo();

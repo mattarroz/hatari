@@ -30,6 +30,11 @@ int z_gdb_backend_init(void);
 
 /**
 * @brief Output a character
+*/
+void z_gdb_backend_destroy(void);
+
+/**
+* @brief Output a character
 *
 * @param ch Character to send
 */

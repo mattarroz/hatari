@@ -588,3 +588,8 @@ int gdb_init(void)
 
  return 0;
 }
+
+void gdb_destroy(void)
+{
+  z_gdb_backend_destroy();
+}

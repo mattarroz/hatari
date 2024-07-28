@@ -1,17 +1,32 @@
 
+#include <errno.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <strings.h>
 #include <unistd.h>
 
 #include "gdbstub_backend.h"
 
-int connfd;
-const int port = 2000;
+static int connfd, sockfd;
+static const int port = 2000;
+
+void z_gdb_putchar(unsigned char ch) {
+  if (!write(connfd, &ch, 1))
+    fprintf(stderr, "gdbstub_backend_tcpip: write failed.\n");
+}
+
+unsigned char z_gdb_getchar(void) {
+  unsigned char ch;
+//  read(connfd, &ch, 1);
+  if (!read(connfd, &ch, 1))
+    fprintf(stderr, "gdbstub_backend_tcpip: read failed.\n");
+  return  ch;
+}
+
 
 int z_gdb_backend_init(void) {
-  int sockfd;
   socklen_t len;
   struct sockaddr_in servaddr, cli;
 
@@ -32,7 +47,7 @@ int z_gdb_backend_init(void) {
 
   // Binding newly created socket to given IP and verification
   if ((bind(sockfd, (const struct sockaddr *)&servaddr, sizeof(servaddr))) != 0) {
-    fprintf(stderr, "gdbstub_backend_tcpip: socket bind failed...\n");
+    fprintf(stderr, "gdbstub_backend_tcpip: socket bind failed (%s)\n", strerror(errno));
     return 0;
   }
   else
@@ -58,15 +73,7 @@ int z_gdb_backend_init(void) {
   return 1;
 }
 
-void z_gdb_putchar(unsigned char ch) {
-  if (!write(connfd, &ch, 1))
-    fprintf(stderr, "gdbstub_backend_tcpip: write failed.\n");
-}
-
-unsigned char z_gdb_getchar(void) {
-  unsigned char ch;
-  read(connfd, &ch, 1);
-//  if (!read(connfd, &ch, 1))
-//    fprintf(stderr, "gdbstub_backend_tcpip: read failed.\n");
-  return  ch;
+void z_gdb_backend_destroy(void) {
+  close(connfd);
+  close(sockfd);
 }

@@ -51,6 +51,7 @@ const char Options_fileid[] = "Hatari options.c";
 bool bLoadAutoSave;        /* Load autosave memory snapshot at startup */
 bool bLoadMemorySave;      /* Load memory snapshot provided via option at startup */
 bool AviRecordOnStartup;   /* Start avi recording at startup */
+bool bActivateGDB;
 bool BenchmarkMode;	   /* Start in benchmark mode (try to run at maximum emulation */
 			   /* speed allowed by the CPU). Disable audio/video for best results */
 
@@ -190,6 +191,7 @@ enum {
 	OPT_WINCON,		/* debug options */
 #endif
 	OPT_DEBUG,
+        OPT_GDB,
 	OPT_EXCEPTIONS,
 	OPT_LILO,
 	OPT_BIOSINTERCEPT,
@@ -484,6 +486,8 @@ static const opt_t HatariOptions[] = {
 #endif
 	{ OPT_DEBUG,     "-D", "--debug",
 	  NULL, "Toggle whether CPU exceptions invoke debugger" },
+        { OPT_GDB,     "-g", "--gdb",
+         NULL, "Activate gdb server on localhost port 2000" },
 	{ OPT_EXCEPTIONS, NULL, "--debug-except",
 	  "<flags>", "Exceptions invoking debugger, see '--debug-except help'" },
 	{ OPT_LILO, NULL, "--lilo", "<x>", "Boot Linux (see manual page)" },
@@ -2113,6 +2117,12 @@ bool Opt_ParseParameters(int argc, const char * const argv[])
 				Log_Printf(LOG_INFO, "Exception debugging enabled (0x%x).\n", ExceptionDebugMask);
 			}
 			break;
+
+                case OPT_GDB:
+                  ExceptionDebugMask = ConfigureParams.Debugger.nExceptionDebugMask;
+                  Log_Printf(LOG_INFO, "Exception debugging enabled (0x%x).\n", ExceptionDebugMask);
+                        bActivateGDB = true;
+                        break;
 
 		case OPT_EXCEPTIONS:
 			i += 1;

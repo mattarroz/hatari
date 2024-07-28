@@ -11,6 +11,7 @@ extern bool bLoadAutoSave;
 extern bool bLoadMemorySave;
 extern bool AviRecordOnStartup;
 extern bool BenchmarkMode;
+extern bool bActivateGDB;
 
 extern bool Opt_IsAtariProgram(const char *path);
 extern bool Opt_ShowError(unsigned int optid, const char *value, const char *error);
