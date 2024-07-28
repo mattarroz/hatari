@@ -179,7 +179,7 @@ int z_gdb_backend_init(void)
  if (uart_dev == NULL) {
    uart_dev = calloc(sizeof(struct UartDevice), 1);
    uart_dev->rate = 19200;
-   uart_dev->filename = "/dev/ttyx";
+   uart_dev->filename = "/tmp/ttyV0";
    ret = uart_start(uart_dev, false);
    if (!ret) {
      fprintf(stderr, "Could not configure uart device\n");

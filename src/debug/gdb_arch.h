@@ -24,10 +24,10 @@ enum regs {
   A3,
   A4,
   A5,
-  FP,
-  SP,
   PS,
   PC,
+  FP,
+  SP,
   GDB_NUM_REGS
 };
 
@@ -40,12 +40,14 @@ struct gdb_ctx {
 
 void arch_gdb_continue(void);
 void arch_gdb_step(void);
-size_t arch_gdb_reg_readall(struct gdb_ctx *p_ctx, uint8_t buf[257], size_t i);
+size_t arch_gdb_reg_readall(struct gdb_ctx *p_ctx, uint8_t *buf, size_t buflen);
 size_t arch_gdb_reg_writeall(struct gdb_ctx *p_ctx, uint8_t *string, size_t i);
-size_t arch_gdb_reg_readone(struct gdb_ctx *p_ctx, uint8_t buf[257], size_t i,
+size_t arch_gdb_reg_readone(struct gdb_ctx *p_ctx, uint8_t *buf, size_t i,
                             uintptr_t addr);
 size_t arch_gdb_reg_writeone(struct gdb_ctx *p_ctx, uint8_t *string,
                              size_t strlen, uintptr_t addr);
 void arch_gdb_init(void);
+
+void z_gdb_entry(void);
 
 #endif //_GDB_ARCH_H_

@@ -114,6 +114,8 @@ bool gdb_mem_can_read(const uintptr_t addr, const size_t len, uint8_t *align);
 */
 bool gdb_mem_can_write(const uintptr_t addr, const size_t len, uint8_t *align);
 
+int z_gdb_main_loop(struct gdb_ctx *ctx);
+
 int gdb_init(void);
 
 #endif

@@ -17,7 +17,8 @@
 #include "gdbstub_backend.h"
 
 /* +1 is for the NULL character added during receive */
-#define GDB_PACKET_SIZE     (256 + 1)
+// FIXME: this is essentially the hex value of the registers
+#define GDB_PACKET_SIZE     (18*8+96*8+3*8 + 1)
 
 /* GDB remote serial protocol does not define errors value properly
 * and handle all error packets as the same the code error is not
@@ -865,9 +866,6 @@ int z_gdb_main_loop(struct gdb_ctx *ctx)
 
 int gdb_init(void)
 {
-#ifdef CONFIG_GDBSTUB_TRACE
- printk("gdbstub:%s enter\n", __func__);
-#endif
  if (z_gdb_backend_init() == -1) {
    fprintf(stderr, "Could not initialize gdbstub backend.\n");
    return -1;
@@ -875,8 +873,7 @@ int gdb_init(void)
 
  arch_gdb_init();
 
-#ifdef CONFIG_GDBSTUB_TRACE
- printk("gdbstub:%s exit\n", __func__);
-#endif
+ z_gdb_entry();
+
  return 0;
 }

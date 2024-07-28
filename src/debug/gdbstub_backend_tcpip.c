@@ -1,5 +1,16 @@
 
-void gdb_sys_init(const char* host, const int port) {
+#include <netinet/in.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <strings.h>
+#include <unistd.h>
+
+#include "gdbstub_backend.h"
+
+int connfd;
+const int port = 2000;
+
+int z_gdb_backend_init(void) {
   int sockfd;
   socklen_t len;
   struct sockaddr_in servaddr, cli;
@@ -7,11 +18,11 @@ void gdb_sys_init(const char* host, const int port) {
   // socket create and verification
   sockfd = socket(AF_INET, SOCK_STREAM, 0);
   if (sockfd == -1) {
-    printf("socket creation failed...\n");
+    printf("gdbstub_backend_tcpip: socket creation failed...\n");
     exit(0);
   }
   else
-    printf("Socket successfully created..\n");
+    printf("gdbstub_backend_tcpip: socket successfully created..\n");
   bzero(&servaddr, sizeof(servaddr));
 
   // assign IP, PORT
@@ -21,62 +32,41 @@ void gdb_sys_init(const char* host, const int port) {
 
   // Binding newly created socket to given IP and verification
   if ((bind(sockfd, (const struct sockaddr *)&servaddr, sizeof(servaddr))) != 0) {
-    printf("socket bind failed...\n");
-    exit(0);
+    fprintf(stderr, "gdbstub_backend_tcpip: socket bind failed...\n");
+    return 0;
   }
   else
-    printf("Socket successfully binded..\n");
+    printf("gdbstub_backend_tcpip: Socket successfully bound..\n");
 
   // Now server is ready to listen and verification
   if ((listen(sockfd, 5)) != 0) {
-    printf("Listen failed...\n");
-    exit(0);
+    printf("gdbstub_backend_tcpip: Listen failed...\n");
+    return 0;
   }
   else
-    printf("Server listening..\n");
+    printf("gdbstub_backend_tcpip: Server listening..\n");
   len = sizeof(cli);
 
   connfd = accept(sockfd, (struct sockaddr *)&cli, &len);
   if (connfd < 0) {
-    printf("server accept failed...\n");
-    exit(0);
+    printf("gdbstub_backend_tcpip: accept failed...\n");
+    return 0;
   }
   else
-    printf("server accept the client...\n");
+    printf("gdbstub_backend_tcpip: Server accepted the client...\n");
 
-  for (;;) {
-    gdb_main(&gdb_state);
-  }
-  // After chatting close the socket
-  close(sockfd);
+  return 1;
 }
 
+void z_gdb_putchar(unsigned char ch) {
+  if (!write(connfd, &ch, 1))
+    fprintf(stderr, "gdbstub_backend_tcpip: write failed.\n");
+}
 
-void receive_loop(void) {
-  const int MAX=80;
-  char buff[MAX];
-  int n;
-  // infinite loop for chat
-  for (;;) {
-    bzero(buff, MAX);
-
-    // read the message from client and copy it in buffer
-    read(connfd, buff, sizeof(buff));
-    // print buffer which contains the client contents
-    printf("From client: %s\t To client : ", buff);
-    bzero(buff, MAX);
-    n = 0;
-    // copy server message in the buffer
-    while ((buff[n++] = getchar()) != '\n')
-      ;
-
-    // and send that buffer to client
-    write(connfd, buff, sizeof(buff));
-
-    // if msg contains "Exit" then server exit and chat ended.
-    if (strncmp("exit", buff, 4) == 0) {
-      printf("Server Exit...\n");
-      break;
-    }
-  }
+unsigned char z_gdb_getchar(void) {
+  unsigned char ch;
+  read(connfd, &ch, 1);
+//  if (!read(connfd, &ch, 1))
+//    fprintf(stderr, "gdbstub_backend_tcpip: read failed.\n");
+  return  ch;
 }
