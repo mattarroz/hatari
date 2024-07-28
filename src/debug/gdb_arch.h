@@ -46,6 +46,13 @@ size_t arch_gdb_reg_readone(struct gdb_ctx *p_ctx, uint8_t *buf, size_t i,
                             uintptr_t addr);
 size_t arch_gdb_reg_writeone(struct gdb_ctx *p_ctx, uint8_t *string,
                              size_t strlen, uintptr_t addr);
+int arch_gdb_add_breakpoint(struct gdb_ctx *ctx, uint8_t type,
+                            uintptr_t addr, uint32_t kind);
+int arch_gdb_remove_breakpoint(struct gdb_ctx *ctx, uint8_t type,
+                               uintptr_t addr, uint32_t kind);
+int arch_gdb_mem_read(uint8_t *buf, size_t buf_len, uintptr_t addr,
+                      size_t len);
+int arch_gdb_mem_write(const uint8_t *buf, uintptr_t addr, size_t len);
 void arch_gdb_init(void);
 
 void z_gdb_entry(void);
