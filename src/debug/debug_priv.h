@@ -9,6 +9,9 @@
 #ifndef HATARI_DEBUG_PRIV_H
 #define HATARI_DEBUG_PRIV_H
 
+#include <stdbool.h>
+#include <stdio.h>
+
 /* internal defines for checks */
 #define TTRAM_START	0x01000000
 #define CART_START	0xFA0000

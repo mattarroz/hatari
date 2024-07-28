@@ -66,6 +66,10 @@ const char Main_fileid[] = "Hatari main.c";
 #include "falcon/dsp.h"
 #include "falcon/videl.h"
 
+#define GDBSTUB_ARCH_MOCK
+#define GDBSTUB_IMPLEMENTATION
+#include "gdbstub.h"
+
 #if HAVE_GETTIMEOFDAY
 #include <sys/time.h>
 #endif
@@ -1034,6 +1038,7 @@ int main(int argc, char *argv[])
 
 	/* Run emulation */
 	Main_UnPauseEmulation();
+        gdb_init();
 	M68000_Start();                 /* Start emulation */
 
 	Control_RemoveFifo();

@@ -10,6 +10,8 @@
 #ifndef HATARI_DEBUGCPU_H
 #define HATARI_DEBUGCPU_H
 
+#include <stdint.h>
+
 extern void DebugCpu_Check(void);
 extern void DebugCpu_SetDebugging(void);
 
