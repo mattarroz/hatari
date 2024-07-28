@@ -15,29 +15,29 @@ const char DebugCpu_fileid[] = "Hatari debugcpu.c";
 
 #include "config.h"
 
-#include "main.h"
+#include "68kDisass.h"
 #include "breakcond.h"
 #include "configuration.h"
-#include "debugui.h"
+#include "console.h"
 #include "debug_priv.h"
 #include "debugcpu.h"
+#include "debugui.h"
 #include "evaluate.h"
+#include "gdb_arch.h"
 #include "hatari-glue.h"
 #include "history.h"
 #include "log.h"
 #include "m68000.h"
+#include "main.h"
 #include "memorySnapShot.h"
+#include "options.h"
 #include "profile.h"
 #include "stMemory.h"
 #include "str.h"
 #include "symbols.h"
-#include "68kDisass.h"
-#include "console.h"
-#include "options.h"
 #include "tos.h"
 #include "str.h"
 #include "vars.h"
-
 
 #define MEMDUMP_COLS   16      /* memdump, number of bytes per row */
 #define NON_PRINT_CHAR '.'     /* character to display for non-printables */
@@ -1356,7 +1356,13 @@ void DebugCpu_Check(void)
 	{
 		if (BreakCond_MatchCpu())
 		{
-			DebugUI(REASON_CPU_BREAKPOINT);
+                        if (bActivateGDB) {
+                          z_gdb_entry();
+                        }
+                        else {
+                          DebugUI(REASON_CPU_BREAKPOINT);
+                        }
+
 			/* make sure we don't decrease step count
 			 * below, before even even getting out of here
 			 */
