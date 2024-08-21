@@ -159,7 +159,6 @@ static int gdb_arch_get_memdump_from_string(char input[1024], uint8_t *output, s
     char *p_output = output;
     size_t bytes_matched = 0;
 
-    printf("input is %s\n", input);
     while (!regexec(&regex_memdump, p_input, 1, matches, 0)) {
         const int start = matches[0].rm_so;
         const int end = matches[0].rm_eo;
@@ -215,12 +214,10 @@ int arch_gdb_mem_read(uint8_t *buf, size_t buf_len, uintptr_t addr,
             snprintf(len_str, 256, "%ld", len);
             argv[3] = len_str;
 
-            printf("arch_gdb_mem_read: %s bytes from %s\n", argv[3], argv[2]);
             rewind(debugOutput);
             cpucmds[i].pFunction(4, (char **) argv);
             fwrite("\0", 1, 1, debugOutput);
             fflush(debugOutput);
-            printf("arch_gdb_mem_read: %s\n", debug_buffer);
         }
     }
 
