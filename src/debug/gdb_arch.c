@@ -61,18 +61,15 @@ static size_t gdb_arch_get_registers_from_string(const char *input,
   strncpy(registers[i].value, p + matches[1].rm_so, len);
   registers[i].value[len] = '\0';
 
-  // Print the extracted values
-  for (int j = 0; j < NUM_REGISTERS; j++) {
-    printf("Register %s: %s\n", registers[j].name, registers[j].value);
-  }
   size_t c = 0;
   for (size_t j = 0; j < NUM_REGISTERS; j++) {
     if (strcmp(registers[j].name, "SR") == 0) {
-      strncpy(registers[j].value + 4, "0000", 4);
+      strncpy(registers[j].value + 4, "0000", 5);
     }
 
     const size_t regval_len = strlen(registers[j].value);
     strncpy(&output[c], registers[j].value, regval_len);
+    assert(regval_len == 8);
     c += regval_len;
   }
 
@@ -213,5 +210,6 @@ void arch_gdb_init(void) {
 }
 
 void z_gdb_entry(void) {
+  arch_gdb_init();
   z_gdb_main_loop(&ctx);
 }

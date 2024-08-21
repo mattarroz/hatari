@@ -48,6 +48,7 @@ const char DebugUI_fileid[] = "Hatari debugui.c";
 #include "profile.h"
 #include "symbols.h"
 #include "vars.h"
+#include "gdb_arch.h"
 
 FILE *debugOutput;
 
@@ -1438,5 +1439,9 @@ void DebugUI_Exceptions(int nr, long pc)
 	if (!(ExceptionDebugMask & ex[nr].flag))
 		return;
 	fprintf(stderr,"%s exception at 0x%lx!\n", ex[nr].name, pc);
-	DebugUI(REASON_CPU_EXCEPTION);
+    if (bActivateGDB) {
+        z_gdb_entry();
+    } else {
+        DebugUI(REASON_CPU_EXCEPTION);
+    }
 }

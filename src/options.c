@@ -51,7 +51,7 @@ const char Options_fileid[] = "Hatari options.c";
 bool bLoadAutoSave;        /* Load autosave memory snapshot at startup */
 bool bLoadMemorySave;      /* Load memory snapshot provided via option at startup */
 bool AviRecordOnStartup;   /* Start avi recording at startup */
-bool bActivateGDB;
+bool bActivateGDB; // FIXME(mreis): mutually exclusive with -D
 bool BenchmarkMode;	   /* Start in benchmark mode (try to run at maximum emulation */
 			   /* speed allowed by the CPU). Disable audio/video for best results */
 
