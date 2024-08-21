@@ -7,6 +7,9 @@
 #ifndef HATARI_68KDISASS_H
 #define HATARI_68KDISASS_H
 
+#include "../cpu/uae/types.h"
+#include <stdint.h>
+
 extern uint32_t Disasm_GetNextPC(uint32_t pc);
 extern void Disasm (FILE *f, uaecptr addr, uaecptr *nextpc, int cnt);
 

@@ -10,6 +10,7 @@
 #define HATARI_DEBUG_PRIV_H
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 
 /* internal defines for checks */
