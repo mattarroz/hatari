@@ -10,7 +10,7 @@
 #include "gdbstub_backend.h"
 
 static int connfd, sockfd;
-static const int port = 2000;
+static const int port = 1985;
 
 void z_gdb_putchar(unsigned char ch) {
   if (!write(connfd, &ch, 1))
@@ -28,6 +28,7 @@ unsigned char z_gdb_getchar(void) {
 
 int z_gdb_backend_init(void) {
   socklen_t len;
+  int opt = 1;
   struct sockaddr_in servaddr, cli;
 
   // socket create and verification
@@ -42,9 +43,10 @@ int z_gdb_backend_init(void) {
 
   // assign IP, PORT
   servaddr.sin_family = AF_INET;
-  servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+  servaddr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
   servaddr.sin_port = htons(port);
 
+  setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
   // Binding newly created socket to given IP and verification
   if ((bind(sockfd, (const struct sockaddr *)&servaddr, sizeof(servaddr))) != 0) {
     fprintf(stderr, "gdbstub_backend_tcpip: socket bind failed (%s)\n", strerror(errno));
@@ -74,6 +76,7 @@ int z_gdb_backend_init(void) {
 }
 
 void z_gdb_backend_destroy(void) {
+  printf("gdbstub_backend_tcip: closing socket...\n");
   close(connfd);
   close(sockfd);
 }
