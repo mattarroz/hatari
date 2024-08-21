@@ -15,6 +15,8 @@
 #include "gdb_arch.h"
 #include "gdbstub.h"
 #include "gdbstub_backend.h"
+#include "configuration.h"
+#include "main.h"
 
 /* +1 is for the NULL character added during receive */
 // FIXME: this is essentially the hex value of the registers
@@ -533,6 +535,11 @@ int z_gdb_main_loop(struct gdb_ctx *ctx)
      break;
 
 
+   case 'k':
+     ConfigureParams.Log.bConfirmQuit = false;
+     ConfigureParams.Memory.bAutoSave = false;
+     Main_RequestQuit(0);
+     return 0;
    /* What cause the pause  */
    case '?':
      gdb_send_exception(buf, sizeof(buf),
