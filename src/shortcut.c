@@ -30,6 +30,8 @@ const char ShortCut_fileid[] = "Hatari shortcut.c";
 #include "avi_record.h"
 #include "clocks_timings.h"
 #include "statusbar.h"
+#include "options.h"
+#include "gdb_arch.h"
 
 static SHORTCUTKEYIDX ShortCutKey = SHORTCUT_NONE;  /* current shortcut key */
 
@@ -216,7 +218,11 @@ static void ShortCut_Debug(void)
 
 	/* Call the debugger */
 	running = Main_PauseEmulation(true);
-	DebugUI(REASON_USER);
+    if (bActivateGDB)
+        z_gdb_entry();
+    else
+	    DebugUI(REASON_USER);
+
 	if (running)
 		Main_UnPauseEmulation();
 }

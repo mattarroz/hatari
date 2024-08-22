@@ -534,7 +534,9 @@ int z_gdb_main_loop(struct gdb_ctx *ctx)
 
      break;
 
-
+   /**
+                * quit hatari
+    */
    case 'k':
      ConfigureParams.Log.bConfirmQuit = false;
      ConfigureParams.Memory.bAutoSave = false;

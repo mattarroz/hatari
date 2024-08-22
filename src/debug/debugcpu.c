@@ -1373,8 +1373,12 @@ void DebugCpu_Check(void)
 	if (nCpuSteps)
 	{
 		nCpuSteps--;
-		if (nCpuSteps == 0)
-			DebugUI(REASON_CPU_STEPS);
+		if (nCpuSteps == 0) {
+            if (bActivateGDB)
+                z_gdb_entry();
+            else
+                DebugUI(REASON_CPU_STEPS);
+        }
 	}
 	if (History_TrackCpu())
 	{
