@@ -168,7 +168,7 @@ static int gdb_arch_get_memdump_from_string(char input[1024], uint8_t *output, s
         bytes_matched++;
         if (bytes_matched > len) {
             fprintf(stderr,
-                    "gdb_arch_get_memdump_from_string: fatal error, we received more bytes (%d) than we should have (%d).\n",
+                    "gdb_arch_get_memdump_from_string: fatal error, we received more bytes (%zu) than we should have (%zu).\n",
                     bytes_matched, len);
         }
         p_input += end;

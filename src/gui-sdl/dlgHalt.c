@@ -17,6 +17,8 @@ const char DlgHalt_fileid[] = "Hatari dlgHalt.c";
 #include "screen.h"
 #include "sdlgui.h"
 #include "m68000.h"
+#include "options.h"
+#include "gdb_arch.h"
 
 #define DLGHALT_WARM	2
 #define DLGHALT_COLD	3
@@ -85,7 +87,10 @@ void Dialog_HaltDlg(void)
 	case DLGHALT_DEBUG:
 		/* Call the debugger, restore screen so user sees what's on it */
 		Screen_UpdateRect(sdlscrn, 0,0, 0,0);
-		DebugUI(REASON_CPU_EXCEPTION);
+		if (bActivateGDB)
+            z_gdb_entry();
+        else
+            DebugUI(REASON_CPU_EXCEPTION);
 		break;
 	case DLGHALT_QUIT:
 	case SDLGUI_QUIT:
