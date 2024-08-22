@@ -274,7 +274,8 @@ void Main_RequestQuit(int exitval)
 	{
 		/* Assure that CPU core shuts down */
 		M68000_SetSpecial(SPCFLAG_BRK);
-                gdb_destroy();
+        if (bActivateGDB)
+            gdb_destroy();
 	}
 	nQuitValue = exitval;
 }
