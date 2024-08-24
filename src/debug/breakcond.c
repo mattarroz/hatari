@@ -1204,9 +1204,9 @@ static bool BreakCond_Parse(const char *expression, bc_options_t *options, bool 
 	if (pstate.argv) {
 		free(pstate.argv);
 	}
-    if (CheckIfBreakPointAlreadyExists(bp, bps)) {
-        goto cleanup;
-    }
+//    if (CheckIfBreakPointAlreadyExists(bp, bps)) {
+//        goto cleanup;
+//    }
 	if (ccount > 0) {
 		bps->count++;
 		if (!options->quiet) {

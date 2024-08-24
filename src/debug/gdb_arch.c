@@ -78,11 +78,15 @@ static size_t gdb_arch_get_registers_from_string(const char *input,
     return c;
 }
 
-void arch_gdb_continue(void) {
-    for (size_t i = 0; i < n_cpucmds; i++) {
-        if (cpucmds[i].sShortName && *cpucmds[i].sShortName == 'c') {
-            cpucmds[i].pFunction(0, NULL);
-            return;
+void arch_gdb_continue(size_t addr) {
+    if (addr) {
+        arch_gdb_add_breakpoint(NULL, 0, addr, 0, true);
+    } else {
+        for (size_t i = 0; i < n_cpucmds; i++) {
+            if (cpucmds[i].sShortName && *cpucmds[i].sShortName == 'c') {
+                cpucmds[i].pFunction(0, NULL);
+                return;
+            }
         }
     }
 }
@@ -129,17 +133,18 @@ size_t arch_gdb_reg_writeone(struct gdb_ctx *p_ctx, uint8_t *string,
     return 0;
 }
 
-int arch_gdb_add_breakpoint(struct gdb_ctx *ctx, uint8_t type,
-                            uintptr_t addr, uint32_t kind) {
+int arch_gdb_add_breakpoint(struct gdb_ctx *ctx, uint8_t type, uintptr_t addr, uint32_t kind, bool once) {
     for (size_t i = 0; i < n_cpucmds; i++) {
         if (cpucmds[i].sShortName && *cpucmds[i].sShortName == 'b') {
-            char *argv[2];
-            char buf[256];
+            char *argv[3];
+            char buf[BUF_LEN];
 
-            snprintf(buf, 256, "pc=0x%lx", addr);
+            snprintf(buf, BUF_LEN, "pc=0x%lx", addr);
             argv[1] = buf;
-            printf("arch_gdb_add_breakpoint: %s\n", argv[1]);
-            cpucmds[i].pFunction(2, (char **) argv);
+            char once_str[] =  ":once";
+            argv[2] = once ? once_str : NULL;
+            printf("arch_gdb_add_breakpoint: %s (once: %u)\n", argv[1], once);
+            cpucmds[i].pFunction(once ? 3 : 2, (char **) argv);
             M68000_SetSpecial(SPCFLAG_DEBUGGER);
             return 0;
         }

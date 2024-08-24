@@ -31,6 +31,8 @@
 #define GDB_ERROR_MEMORY    "E14"
 #define GDB_ERROR_OVERFLOW  "E22"
 
+#define CONFIG_GDBSTUB_TRACE
+
 static bool not_first_start;
 
 /* Empty memory region array */
@@ -276,7 +278,7 @@ static int gdb_send_exception(uint8_t *buf, size_t len, uint8_t exception)
  size_t size;
 
 #ifdef CONFIG_GDBSTUB_TRACE
- printk("gdbstub:%s exception=0x%x\n", __func__, exception);
+ printf("gdbstub:%s exception=0x%x\n", __func__, exception);
 #endif
 
  *buf = 'T';
@@ -387,7 +389,7 @@ int z_gdb_main_loop(struct gdb_ctx *ctx)
    ptr = buf;
 
 #ifdef CONFIG_GDBSTUB_TRACE
-   printk("gdbstub:%s got '%c'(0x%x) command\n", __func__, *ptr, *ptr);
+   printf("gdbstub:%s got '%c'(0x%x) command\n", __func__, *ptr, *ptr);
 #endif
 
    switch (*ptr++) {
@@ -397,6 +399,8 @@ int z_gdb_main_loop(struct gdb_ctx *ctx)
                 * Format: m addr,length
     */
    case 'm':
+       printf("mem: %s\n", ptr);
+
      CHECK_UINT(addr);
      CHECK_SYMBOL(',');
      CHECK_UINT(data_len);
@@ -445,7 +449,9 @@ int z_gdb_main_loop(struct gdb_ctx *ctx)
                 * Format: c addr
     */
    case 'c':
-     arch_gdb_continue();
+     printf("cont: %s\n", ptr);
+     addr = strtoul((const char *)ptr, (char **)&ptr, 16);
+     arch_gdb_continue(addr);
      state = GDB_LOOP_CONTINUE;
      break;
 
@@ -454,6 +460,8 @@ int z_gdb_main_loop(struct gdb_ctx *ctx)
                 * s addr..addr
     */
    case 's':
+       printf("step: %s\n", ptr);
+
      arch_gdb_step();
      state = GDB_LOOP_CONTINUE;
      break;
@@ -463,6 +471,7 @@ int z_gdb_main_loop(struct gdb_ctx *ctx)
                 * Format: g
     */
    case 'g':
+
      pkt_len = arch_gdb_reg_readall(ctx, buf, sizeof(buf));
      CHECK_ERROR(pkt_len == 0);
      gdb_send_packet(buf, pkt_len);
@@ -509,6 +518,8 @@ int z_gdb_main_loop(struct gdb_ctx *ctx)
     */
    case 'z':
    case 'Z':
+       printf("Z/z: %s\n", ptr);
+
      CHECK_UINT(type);
      CHECK_SYMBOL(',');
      CHECK_UINT(addr);
@@ -516,8 +527,9 @@ int z_gdb_main_loop(struct gdb_ctx *ctx)
      CHECK_UINT(data_len);
 
      if (buf[0] == 'Z') {
+
        ret = arch_gdb_add_breakpoint(ctx, type,
-                                     addr, data_len);
+                                     addr, data_len, false);
      } else if (buf[0] == 'z') {
        ret = arch_gdb_remove_breakpoint(ctx, type,
                                         addr, data_len);
@@ -551,7 +563,9 @@ int z_gdb_main_loop(struct gdb_ctx *ctx)
    /* Query packets*/
    case 'q':
    case 'Q':
-     gdb_q_packet(buf, sizeof(buf), &state);
+       printf("q: %s\n", ptr);
+
+           gdb_q_packet(buf, sizeof(buf), &state);
      break;
 
    /* v packets */
