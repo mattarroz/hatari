@@ -1299,35 +1299,35 @@ static bool CheckIfBreakPointAlreadyExists(bc_breakpoint_t *bp, bc_breakpoints_t
  */
 static void BreakCond_Print(bc_breakpoint_t *bp)
 {
-	fprintf(stderr, "\t%s", bp->expression);
+	fprintf(debugOutput, "\t%s", bp->expression);
 	if (bp->options.skip) {
-		fprintf(stderr, " :%d", bp->options.skip);
+		fprintf(debugOutput, " :%d", bp->options.skip);
 	}
 	if (bp->options.once) {
-		fprintf(stderr, " :once");
+		fprintf(debugOutput, " :once");
 	}
 	if (bp->options.quiet) {
-		fprintf(stderr, " :quiet");
+		fprintf(debugOutput, " :quiet");
 	}
 	if (bp->options.trace) {
-		fprintf(stderr, " :trace");
+		fprintf(debugOutput, " :trace");
 		if (bp->options.info) {
-			fprintf(stderr, " :info");
+			fprintf(debugOutput, " :info");
 		}
 		if (bp->options.lock) {
-			fprintf(stderr, " :lock");
+			fprintf(debugOutput, " :lock");
 		}
 		if (bp->options.noinit) {
-			fprintf(stderr, " :noinit");
+			fprintf(debugOutput, " :noinit");
 		}
 	}
 	if (bp->options.filename) {
-		fprintf(stderr, " :file %s", bp->options.filename);
+		fprintf(debugOutput, " :file %s", bp->options.filename);
 	}
 	if (bp->options.deleted) {
-		fprintf(stderr, " (deleted)");
+		fprintf(debugOutput, " (deleted)");
 	}
-	fprintf(stderr, "\n");
+	fprintf(debugOutput, "\n");
 }
 
 /**
@@ -1339,13 +1339,13 @@ static void BreakCond_List(bc_breakpoints_t *bps)
 	int i;
 
 	if (!bps->count) {
-		fprintf(stderr, "No conditional %s breakpoints.\n", bps->name);
+		fprintf(debugOutput, "No conditional %s breakpoints.\n", bps->name);
 		return;
 	}
-	fprintf(stderr, "%d conditional %s breakpoints:\n", bps->count, bps->name);
+	fprintf(debugOutput, "%d conditional %s breakpoints:\n", bps->count, bps->name);
 	bp = bps->breakpoint;
 	for (i = 1; i <= bps->count; bp++, i++) {
-		fprintf(stderr, "%4d:", i);
+		fprintf(debugOutput, "%4d:", i);
 		BreakCond_Print(bp);
 	}
 }
@@ -1359,11 +1359,11 @@ static bool BreakCond_Remove(bc_breakpoints_t *bps, int position)
 	bc_breakpoint_t *bp;
 
 	if (!bps->count) {
-		fprintf(stderr, "No (more) %s breakpoints to remove.\n", bps->name);
+		fprintf(debugOutput, "No (more) %s breakpoints to remove.\n", bps->name);
 		return false;
 	}
 	if (position < 1 || position > bps->count) {
-		fprintf(stderr, "ERROR: No such %s breakpoint.\n", bps->name);
+		fprintf(debugOutput, "ERROR: No such %s breakpoint.\n", bps->name);
 		return false;
 	}
 	bp = bps->breakpoint + (position - 1);
@@ -1372,7 +1372,7 @@ static bool BreakCond_Remove(bc_breakpoints_t *bps, int position)
 		return true;
 	}
 	if (!bp->options.quiet) {
-		fprintf(stderr, "Removed %s breakpoint %d:\n", bps->name, position);
+		fprintf(debugOutput, "Removed %s breakpoint %d:\n", bps->name, position);
 		BreakCond_Print(bp);
 	}
 	free(bp->expression);
@@ -1404,7 +1404,7 @@ static void BreakCond_RemoveAll(bc_breakpoints_t *bps)
 		removed = BreakCond_Remove(bps, i);
 		ASSERT_VARIABLE(removed);
 	}
-	fprintf(stderr, "%s breakpoints: %d\n", bps->name, bps->count);
+	fprintf(debugOutput, "%s breakpoints: %d\n", bps->name, bps->count);
 }
 
 /**

@@ -16,8 +16,9 @@
 /* Required struct */
 static struct gdb_ctx ctx;
 #define DEBUG_BUFFER_SIZE 1024
+#define BUF_LEN 256
 static char debug_buffer[DEBUG_BUFFER_SIZE];
-static regex_t regex, regex_pc, regex_memdump;
+static regex_t regex, regex_pc, regex_memdump, regex_break_list;
 
 const dbgcommand_t *cpucmds;
 size_t n_cpucmds = 0;
@@ -40,8 +41,8 @@ static size_t gdb_arch_get_registers_from_string(const char *input,
     while (!regexec(&regex, p, 3, matches, 0)) {
         // Extract register name
         int len = matches[1].rm_eo - matches[1].rm_so;
-        strncpy(registers[i].name, p + matches[1].rm_so, len);
-        registers[i].name[len] = '\0';
+        strncpy(registers[i].name, p + matches[1].rm_so, len); // FIXME(mreis): what if len > 10?
+        registers[i].name[len] = '\0'; // FIXME(mreis): needed?
 
         // Extract register value
         len = matches[2].rm_eo - matches[2].rm_so;
@@ -147,8 +148,59 @@ int arch_gdb_add_breakpoint(struct gdb_ctx *ctx, uint8_t type,
 }
 
 
+static int gdb_arch_get_bp_index_from_string(char *input, uintptr_t addr) {
+    regmatch_t matches[3];
+    char str_number[BUF_LEN];
+    
+    while (!regexec(&regex_break_list, input, 3, matches, 0)) {
+        int start = matches[1].rm_so;
+        int end = matches[1].rm_eo;
+        int len = end - start;
+        strncpy(str_number, input + start, len+1);
+        int bp_index = (int)strtol(str_number, NULL, 10);
+
+        start = matches[2].rm_so;
+        end = matches[2].rm_eo;
+        len = end - start;
+        strncpy(str_number, input + start, len+1);
+        uintptr_t comp_addr = strtol(str_number, NULL, 16);
+        if (addr == comp_addr)
+            return bp_index;
+    }
+
+    return -1;
+}
+
+
 int arch_gdb_remove_breakpoint(struct gdb_ctx *ctx, uint8_t type,
                                uintptr_t addr, uint32_t kind) {
+    for (size_t i = 0; i < n_cpucmds; i++) {
+        if (cpucmds[i].sShortName && *cpucmds[i].sShortName == 'b') {
+            char *argv[2];
+            argv[0] = NULL;
+            argv[1] = 0;
+            rewind(debugOutput);
+            cpucmds[i].pFunction(0, argv);
+            fwrite("\0", 1, 1, debugOutput);
+            fflush(debugOutput);
+
+            int bp_index = gdb_arch_get_bp_index_from_string(debug_buffer, addr);
+            if (bp_index == -1) {
+                printf("arch_gdb_remove_breakpoint: could not find breakpoint\n");
+                return -1;
+            }
+            char buf[BUF_LEN];
+            snprintf(buf, BUF_LEN, "%d", bp_index);
+            argv[0] = NULL;
+            argv[1] = buf;
+            rewind(debugOutput);
+            cpucmds[i].pFunction(2, argv);
+            fwrite("\0", 1, 1, debugOutput);
+            fflush(debugOutput);
+            printf("arch_gdb_remove_breakpoint: %s, %s\n", buf, debug_buffer);
+        }
+    }
+
     return -2;
 }
 
@@ -201,17 +253,17 @@ int arch_gdb_mem_read(uint8_t *buf, size_t buf_len, uintptr_t addr,
     for (size_t i = 0; i < n_cpucmds; i++) {
         if (cpucmds[i].sShortName && *cpucmds[i].sShortName == 'm') {
             char *argv[4];
-            char addr_str[256];
-            char len_str[256];
+            char addr_str[BUF_LEN];
+            char len_str[BUF_LEN];
             if (align > 1) {
                 // ??
             }
             char mode_str[] = "b";
 
             argv[1] = mode_str;
-            snprintf(addr_str, 256, "0x%lx", addr);
+            snprintf(addr_str, BUF_LEN, "0x%lx", addr);
             argv[2] = addr_str;
-            snprintf(len_str, 256, "%ld", len);
+            snprintf(len_str, BUF_LEN, "%ld", len);
             argv[3] = len_str;
 
             rewind(debugOutput);
@@ -249,6 +301,7 @@ void arch_gdb_init(void) {
     ret |= regcomp(&regex_pc, "\n([0-9A-Fa-f]{8}).*\nNext PC", REG_EXTENDED);
 
     ret |= regcomp(&regex_memdump, "\\b([0-9a-fA-F]{2})\\b", REG_EXTENDED);
+    ret |= regcomp(&regex_break_list, "\\b([0-9]+):\tpc = (0x[0-9a-fA-F]+)\\b", REG_EXTENDED);
     if (ret) {
         fprintf(stderr, "arch_gdb_init: Could not compile regex\n");
         return;
