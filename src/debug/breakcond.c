@@ -117,8 +117,6 @@ static void BreakCond_Print(bc_breakpoint_t *bp);
  * Save breakpoints as debugger input file
  * return true for success, false for failure
  */
-static bool CheckIfBreakPointAlreadyExists(bc_breakpoint_t *bp, bc_breakpoints_t *bps);
-
 bool BreakCond_Save(const char *filename)
 {
 	FILE *fp;
@@ -1195,7 +1193,12 @@ static bool BreakCond_Parse(const char *expression, bc_options_t *options, bool 
 		ccount = BreakCond_ParseCondition(&pstate, bForDsp, bp, 0);
 		/* fail? */
 		if (!ccount) {
-            goto cleanup;
+			bp->expression = NULL;
+			if (bp->conditions) {
+				/* free what was allocated by ParseCondition */
+				free(bp->conditions);
+				bp->conditions = NULL;
+			}
 		}
 		bp->ccount = ccount;
 	} else {
@@ -1204,9 +1207,6 @@ static bool BreakCond_Parse(const char *expression, bc_options_t *options, bool 
 	if (pstate.argv) {
 		free(pstate.argv);
 	}
-//    if (CheckIfBreakPointAlreadyExists(bp, bps)) {
-//        goto cleanup;
-//    }
 	if (ccount > 0) {
 		bps->count++;
 		if (!options->quiet) {
@@ -1272,25 +1272,6 @@ static bool BreakCond_Parse(const char *expression, bc_options_t *options, bool 
 		}
 	}
 	return (ccount > 0);
-
-cleanup:
-    bp->expression = NULL;
-    if (bp->conditions) {
-        /* free what was allocated by ParseCondition */
-        free(bp->conditions);
-        bp->conditions = NULL;
-    }
-    return false;
-}
-
-static bool CheckIfBreakPointAlreadyExists(bc_breakpoint_t *bp, bc_breakpoints_t *bps) {
-    for (int i = 0; i < bps->count; i++) {
-        if (strcmp(bp->expression, bps->breakpoint[i].expression) == 0) {
-            return true;
-        }
-    }
-
-    return false;
 }
 
 
