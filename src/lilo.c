@@ -145,11 +145,14 @@ struct bi_record {
 #define CPUB_68030	1
 #define CPUB_68040	2
 #define CPUB_68060	3
+#define CPUB_68000	5
 
 #define BI_CPU_68020	(1 << CPUB_68020)
 #define BI_CPU_68030	(1 << CPUB_68030)
 #define BI_CPU_68040	(1 << CPUB_68040)
 #define BI_CPU_68060	(1 << CPUB_68060)
+#define BI_CPU_68000	(1 << CPUB_68000)
+
 
 #define FPUB_68881	0
 #define FPUB_68882	1
@@ -165,11 +168,13 @@ struct bi_record {
 #define MMUB_68030	1	/* Internal MMU */
 #define MMUB_68040	2	/* Internal MMU */
 #define MMUB_68060	3	/* Internal MMU */
+#define MMUB_NONE   7
 
 #define BI_MMU_68851	(1 << MMUB_68851)
 #define BI_MMU_68030	(1 << MMUB_68030)
 #define BI_MMU_68040	(1 << MMUB_68040)
 #define BI_MMU_68060	(1 << MMUB_68060)
+#define BI_MMU_NONE     (1 << MMUB_NONE)
 
 /*
  * Stuff for bootinfo interface versioning
@@ -709,18 +714,23 @@ static bool set_machine_type(void)
 	}
 
 	switch(ConfigureParams.System.nCpuLevel) {
-        case 0:
-                bi.cputype = be_swap32(BI_CPU_68020);
-                bi.mmutype = be_swap32(BI_MMU_68851);
-                // FIXME: in linux kernel and here, bootinfo needs to be extended
-                break;
-	case 3:
-		bi.cputype = be_swap32(BI_CPU_68030);
-		bi.mmutype = be_swap32(BI_MMU_68030);
-		break;
-	case 4:
-		bi.cputype = be_swap32(BI_CPU_68040);
-		bi.mmutype = be_swap32(BI_MMU_68040);
+    case 0:
+        if (!ConfigureParams.System.bMMU) {
+            bi.cputype = be_swap32(BI_CPU_68000);
+            bi.mmutype = be_swap32(BI_MMU_NONE);
+        } else {
+            bi.cputype = be_swap32(BI_CPU_68020);
+            bi.mmutype = be_swap32(BI_MMU_68851);
+            // FIXME: in linux kernel and here, bootinfo needs to be extended
+        }
+        break;
+    case 3:
+        bi.cputype = be_swap32(BI_CPU_68030);
+        bi.mmutype = be_swap32(BI_MMU_68030);
+        break;
+    case 4:
+        bi.cputype = be_swap32(BI_CPU_68040);
+        bi.mmutype = be_swap32(BI_MMU_68040);
 #if 0
 		/*
 		 * AB40 has different reset address handling:
