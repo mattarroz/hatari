@@ -1356,12 +1356,11 @@ void DebugCpu_Check(void)
 	{
 		if (BreakCond_MatchCpu())
 		{
-                        if (bActivateGDB) {
-                          z_gdb_entry();
-                        }
-                        else {
-                          DebugUI(REASON_CPU_BREAKPOINT);
-                        }
+            if (bActivateGDB) {
+              z_gdb_entry();
+            } else {
+              DebugUI(REASON_CPU_BREAKPOINT);
+            }
 
 			/* make sure we don't decrease step count
 			 * below, before even even getting out of here

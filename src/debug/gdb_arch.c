@@ -145,7 +145,6 @@ int arch_gdb_add_breakpoint(struct gdb_ctx *ctx, uint8_t type, uintptr_t addr, u
             argv[2] = once ? once_str : NULL;
             printf("arch_gdb_add_breakpoint: %s (once: %u)\n", argv[1], once);
             cpucmds[i].pFunction(once ? 3 : 2, (char **) argv);
-            M68000_SetSpecial(SPCFLAG_DEBUGGER);
             return 0;
         }
     }
@@ -316,4 +315,5 @@ void arch_gdb_init(void) {
 void z_gdb_entry(void) {
     arch_gdb_init();
     z_gdb_main_loop(&ctx);
+    DebugCpu_SetDebugging();
 }
